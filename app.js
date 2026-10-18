@@ -5,6 +5,25 @@ const defaults = Object.freeze({ 'annual-miles': 12000, 'gas-price': 3.5, years:
 const cars = [{ id: 'new', name: 'New Mazda3' }, { id: 'used', name: 'Mazda3 Preferred' }, { id: 'civic', name: 'Civic Hybrid' }];
 const money = value => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
 const number = value => new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(value);
+const inputLabels = Object.freeze({
+  'annual-miles': 'Annual miles',
+  'gas-price': 'Gas price',
+  years: 'Years you’ll keep the car',
+  'price-new': 'New Mazda3 purchase price',
+  'price-used': 'Mazda3 Preferred purchase price',
+  'price-civic': 'Civic Hybrid purchase price',
+  'mpg-new': 'New Mazda3 fuel economy',
+  'mpg-used': 'Mazda3 Preferred fuel economy',
+  'mpg-civic': 'Civic Hybrid fuel economy'
+});
+
+function validationMessage(input) {
+  const label = inputLabels[input.id] || input.labels?.[0]?.textContent.trim() || 'This field';
+  const whole = input.step === '1';
+  const bounds = input.min !== '' && input.max !== '' ? ' from ' + number(Number(input.min)) + ' to ' + number(Number(input.max)) : '';
+  const increment = input.step && input.step !== 'any' && !whole ? ', in increments of ' + input.step : '';
+  return label + ': enter ' + (whole ? 'a whole number' : 'a number') + bounds + increment + '. Results show the last valid inputs.';
+}
 
 function calculateScenario(values) {
   return cars.map(car => {
@@ -23,18 +42,25 @@ function render() {
     const input = document.getElementById(id);
     const valid = input.value.trim() !== '' && input.validity.valid && Number.isFinite(input.valueAsNumber);
     input.setAttribute('aria-invalid', String(!valid));
-    if (!valid) invalidInput = input;
+    const describedBy = (input.getAttribute('aria-describedby') || '').split(/\s+/).filter(id => id && id !== 'input-error');
+    if (!valid) describedBy.push('input-error');
+    if (describedBy.length) input.setAttribute('aria-describedby', describedBy.join(' '));
+    else input.removeAttribute('aria-describedby');
+    if (!valid && !invalidInput) invalidInput = input;
     values[id] = input.valueAsNumber;
   }
   const error = document.getElementById('input-error');
   error.hidden = !invalidInput;
+  error.textContent = invalidInput ? validationMessage(invalidInput) : '';
+  const staleNotice = document.getElementById('results-stale');
+  if (staleNotice) staleNotice.hidden = !invalidInput;
+  document.getElementById('results').dataset.stale = String(Boolean(invalidInput));
   if (invalidInput) {
-    error.textContent = 'Enter a value within the allowed range for each field. MPG must be at least 1; years must be a whole number from 1 to 20. Results below retain the last valid scenario.';
     return;
   }
   const original = ['new', 'used', 'civic'].every(id => values['price-' + id] === defaults['price-' + id]);
   const listed = values['price-new'] === 26855 && values['price-used'] === 27937 && values['price-civic'] === 27990;
-  document.getElementById('price-basis').textContent = original ? 'Price inputs: your original comparison prices.' : listed ? 'Price inputs: shown builder/listing prices; excluded fees still apply.' : 'Price inputs: your custom scenario.';
+  document.getElementById('price-basis').textContent = original ? 'Calculator prices: original estimates.' : listed ? 'Calculator prices: linked listings (fees excluded).' : 'Calculator prices: custom.';
   const rows = calculateScenario(values);
   const maximum = Math.max(...rows.map(row => row.total), 1);
   const minimum = Math.min(...rows.map(row => row.total));
@@ -49,7 +75,7 @@ function render() {
     if (Math.abs(row.total - minimum) < 0.005) {
       const lowest = document.createElement('span');
       lowest.className = 'lowest';
-      lowest.textContent = 'Lowest modeled cost';
+      lowest.textContent = 'Lowest purchase + fuel';
       label.append(lowest);
     }
     const total = document.createElement('strong');

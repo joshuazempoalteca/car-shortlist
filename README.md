@@ -21,3 +21,8 @@ Listings and warranty/specification sources were checked October 17, 2026 and ar
 ## Hosting
 
 Static files are served by GitHub Pages from the main branch root. `.nojekyll` disables Jekyll processing. Relative asset paths support the repository subpath. Open index.html directly or use a static server for local preview.
+
+## Interface
+
+The October 17 redesign uses the Hallmark editorial catalogue approach with a Sport-derived token system. Local Big Shoulders Display, Albert Sans and JetBrains Mono font files are covered by the notices in font-licenses.txt. UI styling is in ui.css and tokens.css; the original styles.css remains as source history. The purchase-plus-fuel formula and vehicle facts are preserved.
+

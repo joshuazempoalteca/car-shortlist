@@ -1,0 +1,137 @@
+/*
+ * Car Shortlist / Purchasing dossier
+ * Hallmark Sport, pinned at 13ac0ec7e148655948100b6396439e481361d690.
+ * Source: https://raw.githubusercontent.com/nutlope/hallmark/13ac0ec7e148655948100b6396439e481361d690/site/css/tokens.css
+ * Typography: https://raw.githubusercontent.com/nutlope/hallmark/13ac0ec7e148655948100b6396439e481361d690/skills/hallmark/references/typography.md
+ * Deliberate changes after the canonical block: warmer paper; neutral ink;
+ * signal red; Big Shoulders Display replaces Inter Tight because Hallmark's
+ * typography reference explicitly forbids Inter Tight as a display family.
+ * Three faces only; mono is reserved for the evidence band + calculator data.
+ * Source CSS: https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;600;700&family=Big+Shoulders+Display:wght@800&family=JetBrains+Mono:wght@400;500&display=swap
+ */
+
+/* These exact official font URLs may be downloaded and served locally. */
+@font-face {
+  font-family: "Big Shoulders Display";
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("big-shoulders.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Albert Sans";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("albert-sans.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url("jetbrains-mono.woff2") format("woff2");
+}
+
+/* Sport-derived purchasing dossier; active tokens. */
+:root[data-theme="sport"] {
+  color-scheme: light;
+  --color-paper: oklch(95.776% 0.00954 93.57);
+  --color-paper-2: oklch(92.782% 0.01246 91.52);
+  --color-paper-3: oklch(88.541% 0.01549 90.25);
+  --color-rule: oklch(81.990% 0.01416 93.01);
+  --color-rule-2: oklch(59.300% 0.01388 91.60);
+  --color-muted: oklch(48.604% 0.01160 87.53);
+  --color-neutral: oklch(37.625% 0.01080 84.59);
+  --color-ink-2: oklch(30.150% 0.00924 88.76);
+  --color-ink: oklch(21.225% 0.00576 106.88);
+  --color-accent: oklch(52.541% 0.17458 29.03);
+  --color-accent-ink: oklch(97.104% 0.01143 84.58);
+  --color-focus: var(--color-accent);
+  --color-accent-pale: oklch(91.512% 0.02360 37.38);
+  --color-image-ground: oklch(91.039% 0.01286 86.83);
+  --color-inverse-paper: var(--color-ink);
+  --color-inverse-ink: var(--color-paper);
+  --color-inverse-muted: oklch(80.138% 0.01291 91.54);
+  --color-inverse-rule: oklch(44.156% 0.01304 95.36);
+  --color-zero: transparent;
+
+  --font-display: "Big Shoulders Display", "Arial Narrow", sans-serif;
+  --font-body: "Albert Sans", ui-sans-serif, sans-serif;
+  --font-serif: var(--font-body);
+  --font-label: var(--font-body);
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-evidence: var(--font-mono);
+  --display-weight: 800;
+  --display-style: normal;
+  --body-weight: 400;
+  --body-emphasis: 700;
+
+  /* Major-third type ratio, five active levels plus responsive hero. */
+  --text-xs: 0.875rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-md: 1.25rem;
+  --text-lg: 1.5625rem;
+  --text-xl: 1.9531rem;
+  --text-2xl: 2.4414rem;
+  --text-3xl: 3.0518rem;
+  --text-display: clamp(3.25rem, 7vw, 5.5rem);
+  --text-display-s: clamp(2.25rem, 3.75vw, 3.815rem);
+  --text-price: clamp(2.25rem, 3.5vw, 3.052rem);
+  --lh-tight: 1.04;
+  --lh-snug: 1.18;
+  --lh-normal: 1.5;
+  --lh-relaxed: 1.625;
+  --tracking-display: -0.025em;
+  --tracking-tight: -0.015em;
+  --tracking-normal: 0;
+  --tracking-label: 0.10em;
+
+  --space-3xs: 0.125rem;
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6.5rem;
+  --space-4xl: 10rem;
+  --section-gap: clamp(3.75rem, 7vw, 6.5rem);
+  --section-head-gap: 1.5rem;
+  --page-max: 82rem;
+  --page-gutter: clamp(1.1rem, 4.25vw, 4.5rem);
+  --measure: 60ch;
+  --rule-hair: 1px;
+  --rule-fine: 2px;
+  --rule-card: 1.5px;
+  --radius-card: 0;
+  --radius-pill: 0;
+  --radius-input: 0;
+  --shadow-card: none;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long: 420ms;
+  --banner-height: 4.25rem;
+  --z-base: 1;
+  --z-raised: 10;
+  --z-sticky: 200;
+  --z-sticky-nav: 300;
+}
+
+@media (max-width: 42rem) {
+  :root[data-theme="sport"] {
+    --text-display: clamp(3rem, 12.6vw, 4rem);
+    --text-display-s: clamp(2.25rem, 9vw, 3rem);
+    --text-price: 2.4414rem;
+    --section-gap: 3.75rem;
+    --page-gutter: 1.1rem;
+    --banner-height: 4rem;
+  }
+}
