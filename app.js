@@ -1,8 +1,8 @@
 'use strict';
 
-// A deliberately narrow model: purchase price plus gasoline, with no resale credit.
-const defaults = Object.freeze({ 'annual-miles': 12000, 'gas-price': 3.5, years: 5, 'price-new': 26000, 'price-used': 28000, 'price-civic': 27000, 'mpg-new': 30, 'mpg-used': 31, 'mpg-civic': 49 });
-const cars = [{ id: 'new', name: 'New Mazda3' }, { id: 'used', name: 'Mazda3 Preferred' }, { id: 'civic', name: 'Civic Hybrid' }];
+// Insurance and annual routine-maintenance/wear reserves stay constant; no inflation, unexpected repairs or resale credit.
+const defaults = Object.freeze({ 'annual-miles': 12000, 'gas-price': 3.5, years: 5, 'price-new': 26000, 'price-used': 28000, 'price-civic': 27000, 'price-touring': 27990, 'mpg-new': 30, 'mpg-used': 31, 'mpg-civic': 49, 'mpg-touring': 34, 'insurance-new': 200, 'insurance-used': 200, 'insurance-civic': 230, 'insurance-touring': 230, 'maintenance-new': 800, 'maintenance-used': 900, 'maintenance-civic': 900, 'maintenance-touring': 900 });
+const cars = [{ id: 'new', name: 'New Mazda3', listingPrice: 26855 }, { id: 'used', name: 'Mazda3 Preferred', listingPrice: 27937 }, { id: 'civic', name: 'Civic Hybrid', listingPrice: 27990 }, { id: 'touring', name: 'Civic Touring', listingPrice: 27990 }];
 const money = value => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
 const number = value => new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(value);
 const inputLabels = Object.freeze({
@@ -12,9 +12,19 @@ const inputLabels = Object.freeze({
   'price-new': 'New Mazda3 purchase price',
   'price-used': 'Mazda3 Preferred purchase price',
   'price-civic': 'Civic Hybrid purchase price',
+  'price-touring': 'Civic Touring purchase price',
   'mpg-new': 'New Mazda3 fuel economy',
   'mpg-used': 'Mazda3 Preferred fuel economy',
-  'mpg-civic': 'Civic Hybrid fuel economy'
+  'mpg-civic': 'Civic Hybrid fuel economy',
+  'mpg-touring': 'Civic Touring fuel economy',
+  'insurance-new': 'New Mazda3 monthly insurance',
+  'insurance-used': 'Mazda3 Preferred monthly insurance',
+  'insurance-civic': 'Civic Hybrid monthly insurance',
+  'insurance-touring': 'Civic Touring monthly insurance',
+  'maintenance-new': 'New Mazda3 annual maintenance',
+  'maintenance-used': 'Mazda3 Preferred annual maintenance',
+  'maintenance-civic': 'Civic Hybrid annual maintenance',
+  'maintenance-touring': 'Civic Touring annual maintenance'
 });
 
 function validationMessage(input) {
@@ -31,8 +41,33 @@ function calculateScenario(values) {
     const mpg = values['mpg-' + car.id];
     const annualFuel = values['annual-miles'] / mpg * values['gas-price'];
     const fuel = annualFuel * values.years;
-    return { ...car, price, mpg, annualFuel, fuel, total: price + fuel };
+    const annualInsurance = values['insurance-' + car.id] * 12;
+    const insurance = annualInsurance * values.years;
+    const annualMaintenance = values['maintenance-' + car.id];
+    const maintenance = annualMaintenance * values.years;
+    const annualRunning = annualFuel + annualInsurance + annualMaintenance;
+    return { ...car, price, mpg, annualFuel, fuel, annualInsurance, insurance, annualMaintenance, maintenance, annualRunning, total: price + fuel + insurance + maintenance };
   });
+}
+
+function compareRunningCosts(newMazda, civic, years) {
+  const savings = newMazda.annualRunning - civic.annualRunning;
+  const premium = civic.price - newMazda.price;
+  const caption = savings > 0 ? 'less per year in Civic Hybrid operating costs' : savings < 0 ? 'more per year in Civic Hybrid operating costs' : 'annual operating-cost difference: Civic Hybrid vs. new Mazda3';
+  const duration = time => time < 0.1 ? 'less than 0.1 years' : 'about ' + number(time) + ' years';
+  let breakEven;
+  if (premium > 0 && savings > 0) {
+    const time = premium / savings;
+    breakEven = 'The Civic Hybrid’s ' + money(premium) + ' purchase premium is recovered in ' + duration(time) + ' through lower operating costs' + (time > years ? ', beyond the selected ownership period.' : '.');
+  } else if (premium <= 0 && savings >= 0) {
+    breakEven = 'At these inputs, the Civic Hybrid starts ' + (premium < 0 ? money(-premium) + ' lower' : 'at the same purchase price') + ' and has ' + (savings > 0 ? 'lower' : 'the same') + ' annual operating costs as the new Mazda3.';
+  } else if (premium > 0) {
+    breakEven = 'At these inputs, operating costs do not recover the Civic Hybrid’s ' + money(premium) + ' purchase premium over the new Mazda3; its annual operating costs are ' + (savings < 0 ? 'higher.' : 'the same.');
+  } else {
+    const time = -premium / -savings;
+    breakEven = premium < 0 ? 'The Civic Hybrid’s ' + money(-premium) + ' lower purchase price is offset by higher operating costs after ' + duration(time) + (time > years ? ', beyond the selected ownership period.' : '.') : 'The purchase prices are equal, and the Civic Hybrid has higher annual operating costs at these inputs.';
+  }
+  return { savings, premium, caption, breakEven };
 }
 
 function render() {
@@ -58,8 +93,8 @@ function render() {
   if (invalidInput) {
     return;
   }
-  const original = ['new', 'used', 'civic'].every(id => values['price-' + id] === defaults['price-' + id]);
-  const listed = values['price-new'] === 26855 && values['price-used'] === 27937 && values['price-civic'] === 27990;
+  const original = cars.every(car => values['price-' + car.id] === defaults['price-' + car.id]);
+  const listed = cars.every(car => values['price-' + car.id] === car.listingPrice);
   document.getElementById('price-basis').textContent = original ? 'Calculator prices: original estimates.' : listed ? 'Calculator prices: linked listings (fees excluded).' : 'Calculator prices: custom.';
   const rows = calculateScenario(values);
   const maximum = Math.max(...rows.map(row => row.total), 1);
@@ -75,7 +110,7 @@ function render() {
     if (Math.abs(row.total - minimum) < 0.005) {
       const lowest = document.createElement('span');
       lowest.className = 'lowest';
-      lowest.textContent = 'Lowest purchase + fuel';
+      lowest.textContent = 'Lowest modeled total';
       label.append(lowest);
     }
     const total = document.createElement('strong');
@@ -84,7 +119,7 @@ function render() {
     const bar = document.createElement('div');
     bar.className = 'cost-bar';
     bar.setAttribute('aria-hidden', 'true');
-    for (const [className, amount] of [['purchase', row.price], ['fuel', row.fuel]]) {
+    for (const [className, amount] of [['purchase', row.price], ['fuel', row.fuel], ['insurance', row.insurance], ['maintenance', row.maintenance]]) {
       const segment = document.createElement('span');
       segment.className = className;
       segment.style.width = (amount / maximum * 100) + '%';
@@ -93,31 +128,23 @@ function render() {
     const sub = document.createElement('div');
     sub.className = 'bar-sub';
     const breakdown = document.createElement('span');
-    breakdown.textContent = money(row.price) + ' purchase + ' + money(row.fuel) + ' fuel';
+    breakdown.className = 'bar-breakdown';
+    for (const [label, amount] of [['purchase', row.price], ['fuel', row.fuel], ['insurance', row.insurance], ['maintenance', row.maintenance]]) {
+      const component = document.createElement('span');
+      component.textContent = money(amount) + ' ' + label;
+      breakdown.append(component);
+    }
     const annual = document.createElement('span');
-    annual.textContent = money(row.annualFuel) + ' fuel / yr · ' + number(row.mpg) + ' mpg';
+    annual.textContent = money(row.annualRunning) + ' running costs / yr · ' + number(row.mpg) + ' mpg';
     sub.append(breakdown, annual);
     wrapper.append(title, bar, sub);
     return wrapper;
   }));
-  const savings = rows[0].annualFuel - rows[2].annualFuel;
-  const premium = rows[2].price - rows[0].price;
-  document.getElementById('annual-savings').textContent = money(Math.abs(savings));
-  document.getElementById('savings-caption').textContent = savings > 0 ? 'less per year in the Civic vs. the new Mazda3' : savings < 0 ? 'more per year in the Civic vs. the new Mazda3' : 'annual fuel-cost difference between the Civic and new Mazda3';
-  const crossover = document.getElementById('break-even');
-  if (premium > 0 && savings > 0) {
-    const time = premium / savings;
-    const formatted = time < 0.1 ? 'less than 0.1 years' : 'about ' + number(time) + ' years';
-    crossover.textContent = 'The Civic’s ' + money(premium) + ' purchase premium is recovered in ' + formatted + ' through fuel savings alone.';
-  } else if (premium <= 0 && savings >= 0) {
-    crossover.textContent = 'At these inputs, the Civic starts ' + (premium < 0 ? money(-premium) + ' lower' : 'at the same purchase price') + ' and uses ' + (savings > 0 ? 'less fuel money' : 'the same fuel money') + ' than the new Mazda3.';
-  } else if (premium > 0) {
-    crossover.textContent = 'At these inputs, fuel savings do not recover the Civic’s ' + money(premium) + ' purchase premium over the new Mazda3.';
-  } else {
-    const time = -premium / -savings;
-    crossover.textContent = premium < 0 ? 'The Civic’s ' + money(-premium) + ' lower purchase price is offset by higher fuel costs after about ' + number(time) + ' years.' : 'The purchase prices are equal, and the Civic uses more fuel money at these inputs.';
-  }
-  document.getElementById('calculation-status').textContent = values.years + '-year purchase plus fuel: ' + rows.map(row => row.name + ' ' + money(row.total)).join('; ') + '.';
+  const comparison = compareRunningCosts(rows.find(row => row.id === 'new'), rows.find(row => row.id === 'civic'), values.years);
+  document.getElementById('annual-savings').textContent = money(Math.abs(comparison.savings));
+  document.getElementById('savings-caption').textContent = comparison.caption;
+  document.getElementById('break-even').textContent = comparison.breakEven;
+  document.getElementById('calculation-status').textContent = values.years + '-year purchase, fuel, insurance and maintenance: ' + rows.map(row => row.name + ' ' + money(row.total)).join('; ') + '.';
 }
 
 if (typeof document !== 'undefined') {
@@ -128,10 +155,9 @@ if (typeof document !== 'undefined') {
     render();
   });
   document.getElementById('use-listing-prices').addEventListener('click', () => {
-    const listingPrices = { new: 26855, used: 27937, civic: 27990 };
-    for (const [id, price] of Object.entries(listingPrices)) document.getElementById('price-' + id).value = price;
+    for (const car of cars) document.getElementById('price-' + car.id).value = car.listingPrice;
     render();
   });
   render();
 }
-if (typeof module !== 'undefined') module.exports = { calculateScenario, defaults };
+if (typeof module !== 'undefined') module.exports = { calculateScenario, compareRunningCosts, defaults };

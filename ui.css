@@ -254,3 +254,36 @@ footer > a:last-child { display: inline-flex; align-items: center; min-height: 4
 
 table { font-variant-numeric: tabular-nums; }
 
+
+/* Hallmark · pre-emit critique: P5 H4 E4 S5 R5 V4 · calculator extension */
+.running-costs { margin-top: var(--space-xl); padding-top: var(--space-lg); border-top: var(--rule-hair) solid var(--color-inverse-rule); }
+.running-costs h3 { font-size: var(--text-xl); text-transform: uppercase; }
+.running-grid input + label { margin-top: var(--space-md); }
+.budget-notes { max-width: 110ch; color: var(--color-inverse-muted); font-size: var(--text-sm); line-height: var(--lh-relaxed); }
+.budget-notes a { display: inline-block; white-space: nowrap; }
+.legend { flex-wrap: wrap; gap: var(--space-xs) var(--space-md); }
+.legend span { white-space: nowrap; }
+.legend i { flex: 0 0 var(--space-sm); }
+.cost-bar > span { flex: 0 0 auto; }
+.insurance { background: var(--color-inverse-muted); color: var(--color-ink); }
+.maintenance { background: var(--color-ink-2); color: var(--color-paper); box-shadow: inset 0 0 0 1px var(--color-inverse-muted); }
+.legend i.purchase { background: var(--color-paper); }
+.legend i.fuel { background: var(--color-rule-2); }
+.legend i.insurance { background: var(--color-inverse-muted); }
+.legend i.maintenance { background: var(--color-ink-2); }
+.bar-sub { flex-direction: column; gap: var(--space-xs); }
+.bar-breakdown { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2xs) var(--space-sm); font-variant-numeric: tabular-nums; }
+.bar-breakdown > span { display: block; }
+.chart-heading { flex-direction: column; align-items: flex-start; }
+.quick-specs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; }
+.quick-specs > span { display: flex; flex-direction: column; min-width: 0; }
+tbody td:nth-child(5)::before { content: 'Civic Touring'; }
+@media (min-width: 40rem) {
+  .car-grid, .edit-grid, .decision-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 75rem) {
+  .car-grid, .edit-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .car-copy h3 { font-size: 2rem; }
+  .decision-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media print { .running-costs, .budget-notes { color: var(--color-ink); } }
