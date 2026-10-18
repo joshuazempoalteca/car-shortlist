@@ -1,23 +1,23 @@
 # The Shortlist
 
-A responsive, static comparison of three supplied car scenarios:
+[Open the public comparison](https://joshuazempoalteca.github.io/car-shortlist/)
 
-- New 2026 Mazda3 — $26,000
-- Used Mazda3 Carbon Edition — $28,000, 9,000 miles, year unconfirmed
-- Used 2025 Honda Civic Hybrid Sedan — $27,000, mileage and trim unconfirmed
+Exact linked vehicles, with original user comparison prices preserved:
 
-Open `index.html` directly, or serve this folder with any static HTTP server. No build step, dependencies, trackers, keys, or backend are required. Inputs change the current browser view; they are not saved or transmitted.
+- New 2026 Mazda3 Sedan 2.5 S Select Sport FWD — $26,000 scenario; Mazda builder shows $26,855.
+- Mazda Certified 2025 Mazda3 Sedan 2.5 S Preferred FWD — $28,000 scenario; listing shows $27,937, 9,177 miles; VIN JM1BPACM3S1759974. This corrects the original Carbon Edition placeholder.
+- Used 2025 Honda Civic Hybrid Sedan — $27,000 scenario; Carvana shows $27,990 plus shipping, 40,310 miles; VIN 2HGFE4F87SH304734. Structured header says Sport; its generated description says Touring, so trim-specific equipment remains qualified.
 
-## GitHub Pages
+The calculator models purchase price plus gasoline. It excludes resale/depreciation, interest, taxes, insurance, maintenance and repairs. “Use shown prices” loads the observed builder/listing prices; those are not equivalent out-the-door quotes. The used Mazda price includes its dealer admin charge; Civic shipping is excluded.
 
-Publish this folder as the root of a **new public repository**. In that repository, choose **Settings → Pages → Build and deployment → Deploy from a branch → main → / (root) → Save**. GitHub will show the public page URL when deployment completes.
+Defaults: 12,000 miles/year, $3.50/gallon, five years; EPA combined MPG 30 / 31 / 49. Inputs are local to the browser and not transmitted or saved. No trackers, keys, dependencies, build step or backend.
 
-All assets use relative paths so the page works at a repository subpath. `.nojekyll` disables unnecessary Jekyll processing.
+## Images and sources
 
-## Model and sources
+Vehicle images were exported from the user-supplied Mazda builder, Mazda exact-VIN inventory page and Carvana exact-vehicle page. The builder image is illustrative; used photos show the linked vehicles. Photo attribution and listing links appear on each card. Copyright remains with the respective source owners. Dealer-photo promotional text is part of the original listing image, not a modeled offer.
 
-The calculator models **purchase price + gasoline only**. It excludes taxes, fees, interest, insurance, maintenance, repairs and depreciation/resale. Inputs are illustrative assumptions. Defaults: 12,000 miles/year, $3.50/gallon, 5 years; 30 / 30 / 49 combined MPG. Manufacturer references and configuration caveats are linked on the page.
+Listings and warranty/specification sources were checked October 17, 2026 and are linked on the page. Prices and availability are a snapshot.
 
-The new Mazda uses 2026 2.5 S FWD sedan specs pending trim/body confirmation. The Carbon uses 2025 2.5 S Carbon Edition AWD sedan specs pending year/body confirmation. Do not treat those reference configurations as verified listings. Both 2025 Civic sedan hybrid trims share the displayed power and MPG ratings.
+## Hosting
 
-Prepared October 17, 2026. There is no live vehicle inventory or price feed.
+Static files are served by GitHub Pages from the main branch root. `.nojekyll` disables Jekyll processing. Relative asset paths support the repository subpath. Open index.html directly or use a static server for local preview.

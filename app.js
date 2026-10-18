@@ -1,8 +1,8 @@
 'use strict';
 
 // A deliberately narrow model: purchase price plus gasoline, with no resale credit.
-const defaults = Object.freeze({ 'annual-miles': 12000, 'gas-price': 3.5, years: 5, 'price-new': 26000, 'price-carbon': 28000, 'price-civic': 27000, 'mpg-new': 30, 'mpg-carbon': 30, 'mpg-civic': 49 });
-const cars = [{ id: 'new', name: 'New Mazda3' }, { id: 'carbon', name: 'Carbon Edition' }, { id: 'civic', name: 'Civic Hybrid' }];
+const defaults = Object.freeze({ 'annual-miles': 12000, 'gas-price': 3.5, years: 5, 'price-new': 26000, 'price-used': 28000, 'price-civic': 27000, 'mpg-new': 30, 'mpg-used': 31, 'mpg-civic': 49 });
+const cars = [{ id: 'new', name: 'New Mazda3' }, { id: 'used', name: 'Mazda3 Preferred' }, { id: 'civic', name: 'Civic Hybrid' }];
 const money = value => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
 const number = value => new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(value);
 
@@ -32,6 +32,9 @@ function render() {
     error.textContent = 'Enter a value within the allowed range for each field. MPG must be at least 1; years must be a whole number from 1 to 20. Results below retain the last valid scenario.';
     return;
   }
+  const original = ['new', 'used', 'civic'].every(id => values['price-' + id] === defaults['price-' + id]);
+  const listed = values['price-new'] === 26855 && values['price-used'] === 27937 && values['price-civic'] === 27990;
+  document.getElementById('price-basis').textContent = original ? 'Price inputs: your original comparison prices.' : listed ? 'Price inputs: shown builder/listing prices; excluded fees still apply.' : 'Price inputs: your custom scenario.';
   const rows = calculateScenario(values);
   const maximum = Math.max(...rows.map(row => row.total), 1);
   const minimum = Math.min(...rows.map(row => row.total));
@@ -96,6 +99,11 @@ if (typeof document !== 'undefined') {
   document.getElementById('cost-form').addEventListener('input', render);
   document.getElementById('reset').addEventListener('click', () => {
     for (const [id, value] of Object.entries(defaults)) document.getElementById(id).value = value;
+    render();
+  });
+  document.getElementById('use-listing-prices').addEventListener('click', () => {
+    const listingPrices = { new: 26855, used: 27937, civic: 27990 };
+    for (const [id, price] of Object.entries(listingPrices)) document.getElementById('price-' + id).value = price;
     render();
   });
   render();
