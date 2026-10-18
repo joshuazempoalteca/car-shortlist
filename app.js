@@ -1,0 +1,103 @@
+'use strict';
+
+// A deliberately narrow model: purchase price plus gasoline, with no resale credit.
+const defaults = Object.freeze({ 'annual-miles': 12000, 'gas-price': 3.5, years: 5, 'price-new': 26000, 'price-carbon': 28000, 'price-civic': 27000, 'mpg-new': 30, 'mpg-carbon': 30, 'mpg-civic': 49 });
+const cars = [{ id: 'new', name: 'New Mazda3' }, { id: 'carbon', name: 'Carbon Edition' }, { id: 'civic', name: 'Civic Hybrid' }];
+const money = value => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
+const number = value => new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(value);
+
+function calculateScenario(values) {
+  return cars.map(car => {
+    const price = values['price-' + car.id];
+    const mpg = values['mpg-' + car.id];
+    const annualFuel = values['annual-miles'] / mpg * values['gas-price'];
+    const fuel = annualFuel * values.years;
+    return { ...car, price, mpg, annualFuel, fuel, total: price + fuel };
+  });
+}
+
+function render() {
+  const values = {};
+  let invalidInput = null;
+  for (const id of Object.keys(defaults)) {
+    const input = document.getElementById(id);
+    const valid = input.value.trim() !== '' && input.validity.valid && Number.isFinite(input.valueAsNumber);
+    input.setAttribute('aria-invalid', String(!valid));
+    if (!valid) invalidInput = input;
+    values[id] = input.valueAsNumber;
+  }
+  const error = document.getElementById('input-error');
+  error.hidden = !invalidInput;
+  if (invalidInput) {
+    error.textContent = 'Enter a value within the allowed range for each field. MPG must be at least 1; years must be a whole number from 1 to 20. Results below retain the last valid scenario.';
+    return;
+  }
+  const rows = calculateScenario(values);
+  const maximum = Math.max(...rows.map(row => row.total), 1);
+  const minimum = Math.min(...rows.map(row => row.total));
+  document.getElementById('term-label').textContent = values.years + '-year';
+  document.getElementById('cost-bars').replaceChildren(...rows.map(row => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'cost-row';
+    const title = document.createElement('div');
+    title.className = 'bar-heading';
+    const label = document.createElement('span');
+    label.textContent = row.name;
+    if (Math.abs(row.total - minimum) < 0.005) {
+      const lowest = document.createElement('span');
+      lowest.className = 'lowest';
+      lowest.textContent = 'Lowest modeled cost';
+      label.append(lowest);
+    }
+    const total = document.createElement('strong');
+    total.textContent = money(row.total);
+    title.append(label, total);
+    const bar = document.createElement('div');
+    bar.className = 'cost-bar';
+    bar.setAttribute('aria-hidden', 'true');
+    for (const [className, amount] of [['purchase', row.price], ['fuel', row.fuel]]) {
+      const segment = document.createElement('span');
+      segment.className = className;
+      segment.style.width = (amount / maximum * 100) + '%';
+      bar.append(segment);
+    }
+    const sub = document.createElement('div');
+    sub.className = 'bar-sub';
+    const breakdown = document.createElement('span');
+    breakdown.textContent = money(row.price) + ' purchase + ' + money(row.fuel) + ' fuel';
+    const annual = document.createElement('span');
+    annual.textContent = money(row.annualFuel) + ' fuel / yr · ' + number(row.mpg) + ' mpg';
+    sub.append(breakdown, annual);
+    wrapper.append(title, bar, sub);
+    return wrapper;
+  }));
+  const savings = rows[0].annualFuel - rows[2].annualFuel;
+  const premium = rows[2].price - rows[0].price;
+  document.getElementById('annual-savings').textContent = money(Math.abs(savings));
+  document.getElementById('savings-caption').textContent = savings > 0 ? 'less per year in the Civic vs. the new Mazda3' : savings < 0 ? 'more per year in the Civic vs. the new Mazda3' : 'annual fuel-cost difference between the Civic and new Mazda3';
+  const crossover = document.getElementById('break-even');
+  if (premium > 0 && savings > 0) {
+    const time = premium / savings;
+    const formatted = time < 0.1 ? 'less than 0.1 years' : 'about ' + number(time) + ' years';
+    crossover.textContent = 'The Civic’s ' + money(premium) + ' purchase premium is recovered in ' + formatted + ' through fuel savings alone.';
+  } else if (premium <= 0 && savings >= 0) {
+    crossover.textContent = 'At these inputs, the Civic starts ' + (premium < 0 ? money(-premium) + ' lower' : 'at the same purchase price') + ' and uses ' + (savings > 0 ? 'less fuel money' : 'the same fuel money') + ' than the new Mazda3.';
+  } else if (premium > 0) {
+    crossover.textContent = 'At these inputs, fuel savings do not recover the Civic’s ' + money(premium) + ' purchase premium over the new Mazda3.';
+  } else {
+    const time = -premium / -savings;
+    crossover.textContent = premium < 0 ? 'The Civic’s ' + money(-premium) + ' lower purchase price is offset by higher fuel costs after about ' + number(time) + ' years.' : 'The purchase prices are equal, and the Civic uses more fuel money at these inputs.';
+  }
+  document.getElementById('calculation-status').textContent = values.years + '-year purchase plus fuel: ' + rows.map(row => row.name + ' ' + money(row.total)).join('; ') + '.';
+}
+
+if (typeof document !== 'undefined') {
+  document.getElementById('cost-form').addEventListener('submit', event => event.preventDefault());
+  document.getElementById('cost-form').addEventListener('input', render);
+  document.getElementById('reset').addEventListener('click', () => {
+    for (const [id, value] of Object.entries(defaults)) document.getElementById(id).value = value;
+    render();
+  });
+  render();
+}
+if (typeof module !== 'undefined') module.exports = { calculateScenario, defaults };
